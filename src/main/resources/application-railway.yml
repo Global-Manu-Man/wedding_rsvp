@@ -151,17 +151,6 @@ management:
         enabled: true
 
 # =====================================================
-# CONFIGURACIÓN DE SEGURIDAD
-# =====================================================
-# Prevenir información sensible en errores
-server:
-  error:
-    include-message: never
-    include-binding-errors: never
-    include-stacktrace: never
-    include-exception: false
-
-# =====================================================
 # CONFIGURACIÓN DE CORS (Ajustar según tu frontend)
 # =====================================================
 # Nota: Esto debe configurarse también en el código Java
