@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: wedding-rsvp-service
+    
+  # Configuración H2 (Desarrollo)
+  datasource:
+    url: jdbc:h2:mem:weddingdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+    
+  # Configuración JPA
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        
+  # Consola H2
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      
+# Configuración del servidor
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    
+# Configuración de logging
+logging:
+  level:
+    root: INFO
+    com.wedding: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    
+# Configuración de paginación
+application:
+  pagination:
+    default-page-size: 10
+    max-page-size: 100
+
+---
+# Perfil de Producción
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+  datasource:
+    url: jdbc:mysql://localhost:3306/wedding_rsvp?createDatabaseIfNotExist=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: your_password
+    
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        
+  h2:
+    console:
+      enabled: false
