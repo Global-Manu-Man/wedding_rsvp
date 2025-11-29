@@ -1,71 +1,153 @@
+#spring:
+#  application:
+#    name: wedding-rsvp-service
+#
+#  # Configuración H2 (Desarrollo)
+#  datasource:
+#    url: jdbc:h2:mem:weddingdb
+#    driver-class-name: org.h2.Driver
+#    username: sa
+#    password: password
+#
+#  # Configuración JPA
+#  jpa:
+#    hibernate:
+#      ddl-auto: create-drop
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        dialect: org.hibernate.dialect.H2Dialect
+#
+#  # Consola H2
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+#
+## Configuración del servidor
+#server:
+#  port: 8080
+#  servlet:
+#    context-path: /api
+#
+## Configuración de logging
+#logging:
+#  level:
+#    root: INFO
+#    com.wedding: DEBUG
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#
+## Configuración de paginación
+#application:
+#  pagination:
+#    default-page-size: 10
+#    max-page-size: 100
+#
+#---
+## Perfil de Producción
+#spring:
+#  config:
+#    activate:
+#      on-profile: prod
+#
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/wedding_rsvp?createDatabaseIfNotExist=true
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: root
+#    password: your_password
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: false
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.MySQL8Dialect
+#
+#  h2:
+#    console:
+#      enabled: false
+# =====================================================
+# CONFIGURACION DE PRODUCCION - RAILWAY
+# =====================================================
+# Usa variables de entorno de Railway automaticamente
+# =====================================================
+
 spring:
   application:
     name: wedding-rsvp-service
-    
-  # Configuración H2 (Desarrollo)
+
+  # =====================================================
+  # CONFIGURACION DE BASE DE DATOS CON VARIABLES DE ENTORNO
+  # =====================================================
   datasource:
-    url: jdbc:h2:mem:weddingdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
-    
-  # Configuración JPA
+    # Railway proporciona estas variables automaticamente
+    url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQLUSER}
+    password: ${MYSQLPASSWORD}
+
+    # Pool de Conexiones HikariCP
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # =====================================================
+  # CONFIGURACION JPA
+  # =====================================================
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-        
-  # Consola H2
+        # Railway usa MySQL, no especificar dialecto (se detecta automaticamente)
+        # dialect: org.hibernate.dialect.MySQLDialect  # Comentado - se auto-detecta
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  # Desactivar H2
   h2:
     console:
-      enabled: true
-      path: /h2-console
-      
-# Configuración del servidor
+      enabled: false
+
+# =====================================================
+# SERVIDOR
+# =====================================================
 server:
-  port: 8080
+  # Railway asigna el puerto automaticamente
+  port: ${PORT:8080}
   servlet:
     context-path: /api
-    
-# Configuración de logging
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html
+    min-response-size: 1024
+
+# =====================================================
+# LOGGING
+# =====================================================
 logging:
   level:
     root: INFO
-    com.wedding: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    
-# Configuración de paginación
+    com.wedding: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN
+
+# =====================================================
+# PAGINACION
+# =====================================================
 application:
   pagination:
     default-page-size: 10
     max-page-size: 100
-
----
-# Perfil de Producción
-spring:
-  config:
-    activate:
-      on-profile: prod
-      
-  datasource:
-    url: jdbc:mysql://localhost:3306/wedding_rsvp?createDatabaseIfNotExist=true
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: your_password
-    
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        
-  h2:
-    console:
-      enabled: false
