@@ -1,169 +1,82 @@
 # =====================================================
-# CONFIGURACIÓN DE PRODUCCIÓN - RAILWAY MYSQL
+# CONFIGURACIÓN DE PRODUCCIÓN - RAILWAY
 # =====================================================
-# Archivo: application-railway.yml
-# Uso: mvn spring-boot:run -Dspring-boot.run.profiles=prod
+# Usa variables de entorno de Railway automáticamente
 # =====================================================
 
 spring:
   application:
     name: wedding-rsvp-service
-    
+
   # =====================================================
-  # CONFIGURACIÓN DE BASE DE DATOS - RAILWAY MYSQL
+  # CONFIGURACIÓN DE BASE DE DATOS CON VARIABLES DE ENTORNO
   # =====================================================
   datasource:
-    # URL de conexión a Railway MySQL
-    # Formato: jdbc:mysql://HOST:PORT/DATABASE?parámetros
-    url: jdbc:mysql://yamanote.proxy.rlwy.net:26043/railway?useSSL=true&requireSSL=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    # Railway proporciona estas variables automáticamente
+    url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: ${MYSQL_PASSWORD:IejWHmkMNfyXMLpWNldOACCWbOWViXtl}
-    
-    # Configuración del Pool de Conexiones (HikariCP)
+    username: ${MYSQLUSER}
+    password: ${MYSQLPASSWORD}
+
+    # Pool de Conexiones HikariCP
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 5
       minimum-idle: 2
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-      pool-name: WeddingRSVP-Pool
-      
+
   # =====================================================
-  # CONFIGURACIÓN JPA / HIBERNATE
+  # CONFIGURACIÓN JPA
   # =====================================================
   jpa:
     hibernate:
-      # IMPORTANTE: En producción usar 'validate' o 'update'
-      # - validate: Solo valida el esquema, no lo modifica (MÁS SEGURO)
-      # - update: Actualiza el esquema si hay cambios (RECOMENDADO PARA TU CASO)
-      # - none: No hace nada
       ddl-auto: update
-      
-      # Naming strategy para nombres de tablas y columnas
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-    
-    # Mostrar SQL en logs (false en producción para mejor rendimiento)
     show-sql: false
-    
     properties:
       hibernate:
-        # Dialecto MySQL 8
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        
-        # Formatear SQL (solo para debugging, desactivar en prod)
+        # Railway usa MySQL, no especificar dialecto (se detecta automáticamente)
+        # dialect: org.hibernate.dialect.MySQLDialect  # Comentado - se auto-detecta
         format_sql: false
-        
-        # Habilitar estadísticas de Hibernate (útil para monitoreo)
-        generate_statistics: false
-        
-        # Configuración de batch para mejor rendimiento
         jdbc:
           batch_size: 20
-          fetch_size: 50
         order_inserts: true
         order_updates: true
-        
-        # Cache de segundo nivel (opcional, mejora rendimiento)
-        cache:
-          use_second_level_cache: false
-          use_query_cache: false
-          
-  # =====================================================
-  # DESACTIVAR H2 EN PRODUCCIÓN
-  # =====================================================
+
+  # Desactivar H2
   h2:
     console:
       enabled: false
 
 # =====================================================
-# CONFIGURACIÓN DEL SERVIDOR
+# SERVIDOR
 # =====================================================
 server:
-  # Railway asigna el puerto automáticamente via variable PORT
+  # Railway asigna el puerto automáticamente
   port: ${PORT:8080}
-  
   servlet:
     context-path: /api
-    
-  # Configuración de compresión para mejor rendimiento
   compression:
     enabled: true
-    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    mime-types: application/json,application/xml,text/html
     min-response-size: 1024
-    
-  # Timeout de conexión
-  tomcat:
-    connection-timeout: 20000
-    max-connections: 10000
-    threads:
-      max: 200
-      min-spare: 10
 
 # =====================================================
-# CONFIGURACIÓN DE LOGGING - PRODUCCIÓN
+# LOGGING
 # =====================================================
 logging:
   level:
     root: INFO
     com.wedding: INFO
-    org.springframework.web: INFO
+    org.springframework.web: WARN
     org.hibernate: WARN
-    org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql.BasicBinder: WARN
-    
-  # Patrón de logs para producción
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    
-  # Archivo de logs (opcional, Railway muestra logs en dashboard)
-  file:
-    name: logs/wedding-rsvp-prod.log
-    max-size: 10MB
-    max-history: 30
 
 # =====================================================
-# CONFIGURACIÓN DE PAGINACIÓN
+# PAGINACIÓN
 # =====================================================
 application:
   pagination:
     default-page-size: 10
     max-page-size: 100
-
-# =====================================================
-# CONFIGURACIÓN DE SPRING BOOT ACTUATOR (MONITOREO)
-# =====================================================
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-      base-path: /actuator
-  endpoint:
-    health:
-      show-details: when-authorized
-  metrics:
-    export:
-      simple:
-        enabled: true
-
-# =====================================================
-# CONFIGURACIÓN DE CORS (Ajustar según tu frontend)
-# =====================================================
-# Nota: Esto debe configurarse también en el código Java
-# Esta sección es solo referencia
-cors:
-  allowed-origins: 
-    - https://myinvitacion.com.mx/
-    - https://emmanuel-naydelin-boda.netlify.app
-  allowed-methods:
-    - GET
-    - POST
-    - PUT
-    - DELETE
-    - OPTIONS
-  allowed-headers: "*"
-  max-age: 3600
