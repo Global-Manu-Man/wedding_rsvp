@@ -1,7 +1,8 @@
 # =====================================================
-# CONFIGURACION DE PRODUCCION - RAILWAY
+# WEDDING RSVP SERVICE - CONFIGURACIÓN
 # =====================================================
-# Usa variables de entorno de Railway automaticamente
+# Las credenciales se leen desde variables de entorno
+# Configurar en archivo .env o en el sistema
 # =====================================================
 
 spring:
@@ -9,53 +10,49 @@ spring:
     name: wedding-rsvp-service
 
   # =====================================================
-  # CONFIGURACION DE BASE DE DATOS CON VARIABLES DE ENTORNO
+  # CONFIGURACIÓN DE BASE DE DATOS
   # =====================================================
   datasource:
-    # Railway proporciona estas variables automaticamente
-    url: jdbc:mysql://yamanote.proxy.rlwy.net:26043/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:railway}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: IejWHmkMNfyXMLpWNldOACCWbOWViXtl
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
 
     # Pool de Conexiones HikariCP
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 2
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: ${DB_MIN_IDLE:2}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
 
   # =====================================================
-  # CONFIGURACION JPA
+  # CONFIGURACIÓN JPA
   # =====================================================
   jpa:
     hibernate:
       ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: false
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        # Railway usa MySQL, no especificar dialecto (se detecta automaticamente)
-        # dialect: org.hibernate.dialect.MySQLDialect  # Comentado - se auto-detecta
         format_sql: false
         jdbc:
           batch_size: 20
         order_inserts: true
         order_updates: true
 
-  # Desactivar H2
+  # H2 Console (solo desarrollo)
   h2:
     console:
-      enabled: false
+      enabled: ${H2_CONSOLE_ENABLED:false}
 
 # =====================================================
 # SERVIDOR
 # =====================================================
 server:
-  # Railway asigna el puerto automaticamente
-  port: ${PORT:8080}
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: /api
   compression:
@@ -68,13 +65,13 @@ server:
 # =====================================================
 logging:
   level:
-    root: INFO
-    com.wedding: INFO
+    root: ${LOG_LEVEL:INFO}
+    com.wedding: ${LOG_LEVEL:INFO}
     org.springframework.web: WARN
     org.hibernate: WARN
 
 # =====================================================
-# PAGINACION
+# PAGINACIÓN
 # =====================================================
 application:
   pagination:
